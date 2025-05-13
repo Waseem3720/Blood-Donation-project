@@ -1,0 +1,12 @@
+.google-auth-container {
+  margin: 20px 0;
+}
+
+.auth-error {
+  color: #d32f2f;
+  background-color: #fdecea;
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 10px;
+  font-size: 14px;
+}

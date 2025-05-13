@@ -1,0 +1,75 @@
+/* Desktop-first: fixed width, left-aligned card */
+.profile-box {
+  width: 400px;
+  margin: 2rem 0;           /* flush left within its container */
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;  /* left-align children */
+}
+
+.profile-box h3 {
+  color: #d32f2f;
+  margin-bottom: 1rem;
+}
+
+.success, .error {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.field {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.field input {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;         /* changed to light grey */
+  border-radius: 4px;
+  font-size: 0.875rem;
+  background-color: white;
+  color: #444;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: #999;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);  /* subtle focus glow */
+}
+
+.btn {
+  padding: 0.6rem 1.2rem;
+  background: #d32f2f;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.btn:hover {
+  background: #b71c1c;
+}
+
+/* Mobile: collapse to full width */
+@media (max-width: 600px) {
+  .profile-box {
+    width: 100%;
+    padding: 1rem;
+  }
+}
