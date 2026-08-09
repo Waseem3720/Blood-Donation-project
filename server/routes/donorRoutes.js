@@ -3,19 +3,17 @@ const router = express.Router();
 const { protect } = require('../middleware/auth');
 const donorController = require('../controllers/donorController');
 
-// Get all matching blood requests for the donor
+// Verify all required functions exist
+if (typeof protect !== 'function') {
+  throw new Error('Auth middleware is not a function');
+}
+if (!donorController.getMatchingRequests || typeof donorController.getMatchingRequests !== 'function') {
+  throw new Error('getMatchingRequests controller is missing or not a function');
+}
+
 router.get('/requests', protect, donorController.getMatchingRequests);
-
-// Accept a specific blood request
 router.put('/requests/:requestId/accept', protect, donorController.acceptRequest);
-
-// Toggle donor availability status
 router.put('/availability', protect, donorController.toggleAvailability);
-
-// Get donation history (accepted requests by the donor)
-router.get('/donation-history', protect, donorController.getDonationHistory);
-
-// Mark donation as completed
-router.put('/requests/:requestId/complete', protect, donorController.completeDonation);
+router.get('/history', protect, donorController.getDonationHistory);
 
 module.exports = router;

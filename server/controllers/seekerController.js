@@ -10,29 +10,16 @@ const createBloodRequest = async (req, res, next) => {
     if (!seeker) {
       return res.status(404).json({ success: false, message: 'Seeker not found' });
     }
-
-    // Destructure bloodGroup, unitRequired, note, and location from the request body
-    const { bloodGroup, unitRequired, note, location } = req.body;
-
-    // Validate unitRequired
-    if (!unitRequired || unitRequired <= 0) {
-      return res.status(400).json({ success: false, message: 'Unit required must be greater than 0' });
-    }
-
-    // If location is not provided, return an error
-    if (!location) {
-      return res.status(400).json({ success: false, message: 'Location is required' });
-    }
-
-    // Create a new blood request using the provided location
+    
+    const { bloodGroup, note, location } = req.body;
+    
     const request = new BloodRequest({
       seeker: req.user.id,
       bloodGroup,
-      location, // Use the location from the user input
-      unitRequired, // Include the unitRequired field
+      location: location || seeker.location,
       note
     });
-
+    
     await request.save();
 
     // Notify matching donors
@@ -49,7 +36,7 @@ const createBloodRequest = async (req, res, next) => {
   }
 };
 
-// Get seeker's blood requests with accepted donor details
+// Get seeker's blood requests
 const getMyRequests = async (req, res, next) => {
   try {
     const requests = await BloodRequest.find({ seeker: req.user.id })
@@ -101,39 +88,44 @@ const cancelRequest = async (req, res, next) => {
   }
 };
 
-// Donor accepts a blood request
-const acceptBloodRequest = async (req, res, next) => {
+// Get available donor locations (optionally filtered by bloodGroup)
+const getDonorLocations = async (req, res, next) => {
   try {
-    const donor = await User.findById(req.user.id);
-
-    if (!donor || donor.role !== 'donor') {
-      return res.status(403).json({ success: false, message: 'Only donors can accept requests' });
+    const { bloodGroup } = req.query;
+    const filter = { role: 'donor' };
+    if (bloodGroup) {
+      filter.bloodGroup = bloodGroup;
     }
-
-    const request = await BloodRequest.findById(req.params.requestId);
-
-    if (!request) {
-      return res.status(404).json({ success: false, message: 'Request not found' });
-    }
-
-    if (request.status !== 'pending') {
-      return res.status(400).json({ success: false, message: 'Request is not available for acceptance' });
-    }
-
-    // Accept the request
-    request.acceptedBy = donor._id;
-    request.status = 'accepted';
-    request.acceptedAt = new Date();
-
-    await request.save();
-
+    const locations = await User.find(filter).distinct('location');
     res.status(200).json({
       success: true,
-      message: 'Request accepted successfully',
-      data: request
+      data: locations.filter(loc => loc && loc.trim() !== '')
     });
   } catch (err) {
-    console.error(err);
+    next(err);
+  }
+};
+
+// Search / filter donors by bloodGroup and location
+const searchDonors = async (req, res, next) => {
+  try {
+    const { bloodGroup, location } = req.query;
+    const filter = { role: 'donor' };
+
+    if (bloodGroup) {
+      filter.bloodGroup = bloodGroup;
+    }
+    if (location) {
+      filter.location = { $regex: new RegExp(location, 'i') };
+    }
+
+    const donors = await User.find(filter).select('fullName email phoneNumber location bloodGroup age isAvailable');
+    res.status(200).json({
+      success: true,
+      count: donors.length,
+      data: donors
+    });
+  } catch (err) {
     next(err);
   }
 };
@@ -142,5 +134,6 @@ module.exports = {
   createBloodRequest,
   getMyRequests,
   cancelRequest,
-  acceptBloodRequest
+  getDonorLocations,
+  searchDonors
 };

@@ -19,14 +19,15 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
       setError('');
-
+      
       const [usersRes, requestsRes] = await Promise.all([
         api.get('/admin/users'),
         api.get('/admin/requests')
       ]);
-
+      
       setUsers(usersRes.data?.data || []);
       setRequests(requestsRes.data?.data || []);
+      
     } catch (err) {
       console.error('Fetch error:', err);
       setError(err.response?.data?.message || err.message || 'Failed to fetch data');
@@ -38,12 +39,13 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchData();
 
+    // Socket.IO listeners
     const handleNewUser = (newUser) => {
       setUsers(prev => [newUser, ...prev]);
     };
 
     const handleUserUpdated = (updatedUser) => {
-      setUsers(prev => prev.map(user =>
+      setUsers(prev => prev.map(user => 
         user._id === updatedUser._id ? updatedUser : user
       ));
     };
@@ -57,7 +59,7 @@ const AdminDashboard = () => {
     };
 
     const handleRequestUpdated = (updatedRequest) => {
-      setRequests(prev => prev.map(req =>
+      setRequests(prev => prev.map(req => 
         req._id === updatedRequest._id ? updatedRequest : req
       ));
     };
@@ -85,6 +87,7 @@ const AdminDashboard = () => {
     try {
       await api.delete(`/admin/users/${userId}`);
       setUsers(prev => prev.filter(user => user._id !== userId));
+      
       if (socket) {
         socket.emit('adminDeletedUser', userId);
       }
@@ -96,9 +99,10 @@ const AdminDashboard = () => {
   const handleBlockUser = async (userId, isBlocked) => {
     try {
       const { data } = await api.put(`/admin/users/${userId}/block`, { isBlocked });
-      setUsers(prev => prev.map(user =>
+      setUsers(prev => prev.map(user => 
         user._id === userId ? { ...user, isBlocked: data.isBlocked } : user
       ));
+      
       if (socket) {
         socket.emit('adminBlockedUser', { userId, isBlocked });
       }
@@ -119,6 +123,16 @@ const AdminDashboard = () => {
     <div className="admin-dashboard">
       <header className="dashboard-header">
         <h1>Admin Dashboard</h1>
+        <button 
+          className="logout-btn"
+          onClick={() => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            navigate('/login');
+          }}
+        >
+          Logout
+        </button>
       </header>
 
       {error && <div className="error-message">{error}</div>}
@@ -136,24 +150,14 @@ const AdminDashboard = () => {
         >
           Blood Requests
         </button>
-        <button
-          className="tab-btn logout"
-          onClick={() => {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            navigate('/login');
-          }}
-        >
-          Logout
-        </button>
       </div>
 
       <div className="dashboard-content">
         {activeTab === 'users' ? (
-          <AdminUsersTable
-            users={users}
-            onDelete={handleDeleteUser}
-            onBlock={handleBlockUser}
+          <AdminUsersTable 
+            users={users} 
+            onDelete={handleDeleteUser} 
+            onBlock={handleBlockUser} 
           />
         ) : (
           <AdminRequestsTable requests={requests} />

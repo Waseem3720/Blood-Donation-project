@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import "../../assets/seekerComponents.css";
 
-const RequestForm = ({ onSubmit, onCancel, profileLocation }) => {
+const RequestForm = ({ onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
     bloodGroup: '',
-    unitRequired: 1,
+    unitsRequired: 1,
     urgency: 'normal',
-    location: profileLocation || '',
+    location: '',
     note: '',
   });
 
@@ -18,30 +18,14 @@ const RequestForm = ({ onSubmit, onCancel, profileLocation }) => {
   ];
 
   const handleChange = (e) => {
-    const { name, value, type } = e.target;
-
-    if (type === 'number') {
-      const numValue = Number(value);
-      setFormData(prev => ({
-        ...prev,
-        [name]: isNaN(numValue) ? '' : numValue
-      }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Submitting:", formData); // For debug
     onSubmit(formData);
   };
-
-  useEffect(() => {
-    if (profileLocation !== undefined) {
-      setFormData(prev => ({ ...prev, location: profileLocation }));
-    }
-  }, [profileLocation]);
 
   return (
     <div className="request-form-container">
@@ -66,10 +50,10 @@ const RequestForm = ({ onSubmit, onCancel, profileLocation }) => {
           <label>Units Required:</label>
           <input
             type="number"
-            name="unitRequired"
+            name="unitsRequired"
             min="1"
             max="10"
-            value={formData.unitRequired}
+            value={formData.unitsRequired}
             onChange={handleChange}
             required
           />
@@ -77,19 +61,20 @@ const RequestForm = ({ onSubmit, onCancel, profileLocation }) => {
 
         <div className="form-group">
           <label>Urgency Level:</label>
-          <select
-            name="urgency"
-            value={formData.urgency}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Urgency Level</option>
+          <div className="radio-group">
             {urgencyLevels.map(level => (
-              <option key={level.value} value={level.value}>
+              <label key={level.value}>
+                <input
+                  type="radio"
+                  name="urgency"
+                  value={level.value}
+                  checked={formData.urgency === level.value}
+                  onChange={handleChange}
+                />
                 {level.label}
-              </option>
+              </label>
             ))}
-          </select>
+          </div>
         </div>
 
         <div className="form-group">
