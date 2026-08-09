@@ -30,7 +30,8 @@ A comprehensive web-based platform designed to bridge the gap between blood dono
 - **Node.js**: Scalable runtime for the server environment.
 - **Express.js**: Robust web framework for building APIs.
 - **MongoDB & Mongoose**: Flexible NoSQL database with object data modeling.
-- **Socket.io**: Enabling real-time, bi-directional event-based communication.
+- **Web Push Notifications**: ending real-time browser notifications to users for important blood donation requests and updates.
+
 - **JSON Web Tokens (JWT)**: Secure user session management.
 - **Bcrypt.js**: High-security password hashing.
 
