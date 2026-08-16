@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
-const { validateRegister, validateCompleteGoogle } = require('../utils/validator');
+const { validateRegister, validateCompleteGoogle } = require('../middleware/validateRequest');
 
 router.post('/register', (req, res, next) => {
   validateRegister(req, res, () => {

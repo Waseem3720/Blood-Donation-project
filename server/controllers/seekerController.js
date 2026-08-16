@@ -1,6 +1,5 @@
 const BloodRequest = require('../models/BloodRequest');
 const User = require('../models/User');
-const { notifyMatchingDonors } = require('../socket/notificationService');
 
 // Create blood request
 const createBloodRequest = async (req, res, next) => {
@@ -22,10 +21,6 @@ const createBloodRequest = async (req, res, next) => {
     
     await request.save();
 
-    // Notify matching donors
-    const { io, connectedUsers } = req.app.get('socketio');
-    await notifyMatchingDonors(io, connectedUsers, request);
-    
     res.status(201).json({
       success: true,
       data: request

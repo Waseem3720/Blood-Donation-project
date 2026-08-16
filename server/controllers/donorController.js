@@ -1,6 +1,5 @@
 const BloodRequest = require('../models/BloodRequest');
 const User = require('../models/User');
-const { sendNotification } = require('../socket/notificationService');
 
 const getMatchingRequests = async (req, res) => {
   try {
@@ -58,18 +57,6 @@ const acceptRequest = async (req, res, next) => {
     
     await request.save();
 
-    const { io, connectedUsers } = req.app.get('socketio');
-    await sendNotification(
-      io,
-      connectedUsers,
-      request.seeker,
-      `Your blood request for ${request.bloodGroup} has been accepted`,
-      { 
-        requestId: request._id,
-        donorId: req.user.id 
-      }
-    );
-    
     res.status(200).json({
       success: true,
       data: request
