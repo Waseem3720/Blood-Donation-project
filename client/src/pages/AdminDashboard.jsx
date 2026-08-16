@@ -1,18 +1,27 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import DashboardNavbar from '../components/DashboardNavbar';
+import Sidebar from '../components/Sidebar';
 import AdminUsersTable from '../components/admin/AdminUsersTable';
 import AdminRequestsTable from '../components/admin/AdminRequestsTable';
 import ViewDonors from '../components/admin/ViewDonors';
 import ViewSeekers from '../components/admin/ViewSeekers';
 import '../assets/adminDashboard.css';
 
+const adminTabs = [
+  { id: 'dashboard', label: 'Dashboard', icon: '🏠' },
+  { id: 'requests', label: 'Blood Requests', icon: '🩸' },
+  { id: 'donors', label: 'View Donors', icon: '🩸' },
+  { id: 'seekers', label: 'View Seekers', icon: '🧑' },
+];
+
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('users');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const navigate = useNavigate();
 
   const fetchData = async () => {
@@ -60,73 +69,59 @@ const AdminDashboard = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="admin-dashboard">
-        <div className="loading-spinner">Loading...</div>
-      </div>
-    );
-  }
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/');
+  };
 
   return (
-    <div className="admin-dashboard">
-      <header className="dashboard-header">
-        <h1>Admin Dashboard</h1>
-        <button 
-          className="logout-btn"
-          onClick={() => {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            navigate('/login');
-          }}
-        >
-          Logout
-        </button>
-      </header>
+    <div className="dashboard-layout">
+      <DashboardNavbar 
+        role="Admin"
+        onTabChange={setActiveTab}
+        onLogout={handleLogout}
+      />
 
-      {error && <div className="error-message">{error}</div>}
+      <div className="dashboard-container">
+        <Sidebar 
+          tabs={adminTabs} 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab} 
+        />
 
-      <div className="dashboard-tabs">
-        <button
-          className={`tab-btn ${activeTab === 'users' ? 'active' : ''}`}
-          onClick={() => setActiveTab('users')}
-        >
-          Users
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'requests' ? 'active' : ''}`}
-          onClick={() => setActiveTab('requests')}
-        >
-          Blood Requests
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'donors' ? 'active' : ''}`}
-          onClick={() => setActiveTab('donors')}
-        >
-          View Donors
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'seekers' ? 'active' : ''}`}
-          onClick={() => setActiveTab('seekers')}
-        >
-          View Seekers
-        </button>
-      </div>
+        <main className="dashboard-main">
+          {error && <div className="error-message">{error}</div>}
 
-      <div className="dashboard-content">
-        {activeTab === 'users' ? (
-          <AdminUsersTable 
-            users={users} 
-            onDelete={handleDeleteUser} 
-            onBlock={handleBlockUser} 
-          />
-        ) : activeTab === 'requests' ? (
-          <AdminRequestsTable requests={requests} />
-        ) : activeTab === 'donors' ? (
-          <ViewDonors />
-        ) : (
-          <ViewSeekers />
-        )}
+          {loading ? (
+            <div className="loading-spinner">Loading Admin Dashboard...</div>
+          ) : (
+            <>
+              {activeTab === 'dashboard' && (
+                <div className="admin-overview">
+                  <h2>All Users Management</h2>
+                  <AdminUsersTable 
+                    users={users} 
+                    onDelete={handleDeleteUser} 
+                    onBlock={handleBlockUser} 
+                  />
+                </div>
+              )}
+
+              {activeTab === 'requests' && (
+                <AdminRequestsTable requests={requests} />
+              )}
+
+              {activeTab === 'donors' && (
+                <ViewDonors />
+              )}
+
+              {activeTab === 'seekers' && (
+                <ViewSeekers />
+              )}
+            </>
+          )}
+        </main>
       </div>
     </div>
   );

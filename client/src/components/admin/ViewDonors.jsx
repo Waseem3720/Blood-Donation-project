@@ -8,29 +8,23 @@ const ViewDonors = () => {
   const [error, setError] = useState('');
   const [bloodGroup, setBloodGroup] = useState('');
   const [location, setLocation] = useState('');
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [totalDonors, setTotalDonors] = useState(0);
 
   const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
-  const fetchDonors = async (pageNum = 1) => {
+  const fetchDonors = async () => {
     try {
       setLoading(true);
       setError('');
       
       const params = new URLSearchParams();
-      params.append('page', pageNum);
-      params.append('limit', 10);
       if (bloodGroup) params.append('bloodGroup', bloodGroup);
       if (location) params.append('location', location);
 
       const response = await api.get(`/admin/donors?${params.toString()}`);
       
       setDonors(response.data?.data || []);
-      setTotalPages(response.data?.totalPages || 1);
-      setTotalDonors(response.data?.totalDonors || 0);
-      setPage(pageNum);
+      setTotalDonors(response.data?.totalDonors || (response.data?.data || []).length);
     } catch (err) {
       console.error('Fetch error:', err);
       setError(err.response?.data?.message || err.message || 'Failed to fetch donors');
@@ -40,37 +34,24 @@ const ViewDonors = () => {
   };
 
   useEffect(() => {
-    setPage(1);
-    fetchDonors(1);
+    fetchDonors();
   }, [bloodGroup, location]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setPage(1);
-    fetchDonors(1);
+    fetchDonors();
   };
 
   const handleClearFilters = () => {
     setBloodGroup('');
     setLocation('');
-    setPage(1);
-    fetchDonors(1);
-  };
-
-  const handleNextPage = () => {
-    if (page < totalPages) {
-      fetchDonors(page + 1);
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (page > 1) {
-      fetchDonors(page - 1);
-    }
   };
 
   return (
     <div className="view-section">
+      <h2>Registered Donors</h2>
+      <div className="total-count-badge">Total Registered Donors: {totalDonors}</div>
+
       <div className="search-filters">
         <h3>Search Donors</h3>
         <form onSubmit={handleSearch} className="filter-form">
@@ -112,61 +93,40 @@ const ViewDonors = () => {
 
       <div className="table-container">
         {loading ? (
-          <p>Loading donors...</p>
+          <p style={{ padding: '1.5rem', color: '#666' }}>Loading donors...</p>
         ) : donors.length === 0 ? (
-          <p>No donors found.</p>
+          <p style={{ padding: '1.5rem', color: '#666' }}>No donors found.</p>
         ) : (
-          <>
-            <div className="donor-count">Total Donors: {totalDonors}</div>
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Blood Group</th>
-                  <th>Location</th>
-                  <th>Age</th>
-                  <th>Status</th>
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Blood Group</th>
+                <th>Location</th>
+                <th>Age</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {donors.map(donor => (
+                <tr key={donor._id}>
+                  <td>{donor.fullName}</td>
+                  <td>{donor.email}</td>
+                  <td>{donor.phoneNumber}</td>
+                  <td><span className="role-badge donor">{donor.bloodGroup}</span></td>
+                  <td>{donor.location}</td>
+                  <td>{donor.age}</td>
+                  <td>
+                    <span className={`status-badge ${donor.isAvailable ? 'available' : 'unavailable'}`}>
+                      {donor.isAvailable ? 'Available' : 'Unavailable'}
+                    </span>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {donors.map(donor => (
-                  <tr key={donor._id}>
-                    <td>{donor.fullName}</td>
-                    <td>{donor.email}</td>
-                    <td>{donor.phoneNumber}</td>
-                    <td className="blood-group-badge">{donor.bloodGroup}</td>
-                    <td>{donor.location}</td>
-                    <td>{donor.age}</td>
-                    <td>
-                      <span className={`status-badge ${donor.isAvailable ? 'available' : 'unavailable'}`}>
-                        {donor.isAvailable ? 'Available' : 'Unavailable'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            <div className="pagination">
-              <button 
-                onClick={handlePrevPage} 
-                disabled={page === 1}
-                className="pagination-btn"
-              >
-                Previous
-              </button>
-              <span className="page-info">Page {page} of {totalPages}</span>
-              <button 
-                onClick={handleNextPage} 
-                disabled={page === totalPages}
-                className="pagination-btn"
-              >
-                Next
-              </button>
-            </div>
-          </>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
     </div>

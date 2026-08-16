@@ -15,6 +15,41 @@ api.interceptors.request.use(config => {
   return config;
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      if (error.response.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+      } else if (error.response.status === 403) {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          try {
+            const user = JSON.parse(userStr);
+            if (user?.role) {
+              const userRole = String(user.role).toLowerCase();
+              if (window.location.pathname !== `/${userRole}`) {
+                window.location.href = `/${userRole}`;
+              }
+            } else {
+              window.location.href = '/login';
+            }
+          } catch (e) {
+            window.location.href = '/login';
+          }
+        } else {
+          window.location.href = '/login';
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Notification-related API calls
 export const getNotifications = async () => {
   try {

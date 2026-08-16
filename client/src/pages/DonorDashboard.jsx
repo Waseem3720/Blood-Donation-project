@@ -1,7 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api, { getDonationHistory, updateProfile } from '../services/api';
+import DashboardNavbar from '../components/DashboardNavbar';
+import Sidebar from '../components/Sidebar';
 import '../assets/donorDashboard.css';
+
+const donorTabs = [
+  { id: 'userInfo', label: 'Dashboard', icon: '🏠' },
+  { id: 'requests', label: 'Available Requests', icon: '🩸' },
+  { id: 'history', label: 'Donation History', icon: '📜' },
+];
 
 const DonorDashboard = () => {
   const [activeTab, setActiveTab] = useState('userInfo');
@@ -100,7 +108,7 @@ const DonorDashboard = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    navigate('/login');
+    navigate('/');
   };
 
   const formatDate = (dateStr) => {
@@ -108,223 +116,199 @@ const DonorDashboard = () => {
     return new Date(dateStr).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
-  if (loading) {
-    return (
-      <div className="donor-dashboard">
-        <div className="no-data">Loading Donor Dashboard...</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="donor-dashboard">
-      <header className="dashboard-header">
-        <h1>Donor Dashboard</h1>
-        <div className="header-actions">
-          {user && (
-            <button
-              className={`availability-btn ${user.isAvailable ? 'available' : 'unavailable'}`}
-              onClick={toggleAvailability}
-            >
-              {user.isAvailable ? 'Status: Available' : 'Status: Unavailable'}
-            </button>
+    <div className="dashboard-layout">
+      <DashboardNavbar
+        user={user}
+        role="Donor"
+        onTabChange={handleTabChange}
+        onToggleAvailability={toggleAvailability}
+        onLogout={handleLogout}
+      />
+
+      <div className="dashboard-container">
+        <Sidebar
+          tabs={donorTabs}
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+        />
+
+        <main className="dashboard-main">
+          {error && <div className="alert-message error">{error}</div>}
+          {profileSuccess && <div className="alert-message success">{profileSuccess}</div>}
+
+          {loading ? (
+            <div className="no-data">Loading Donor Dashboard...</div>
+          ) : (
+            <div className="dashboard-content">
+              {/* ======== USER INFO TAB ======== */}
+              {activeTab === 'userInfo' && user && (
+                <div className="user-info-section">
+                  <h2>Donor Profile Overview</h2>
+                  <div className="user-info-card">
+                    <div className="info-item">
+                      <label>Full Name</label>
+                      <p>{user.fullName}</p>
+                    </div>
+                    <div className="info-item">
+                      <label>Email</label>
+                      <p>{user.email}</p>
+                    </div>
+                    <div className="info-item">
+                      <label>Phone Number</label>
+                      <p>{user.phoneNumber || 'N/A'}</p>
+                    </div>
+                    <div className="info-item">
+                      <label>Blood Group</label>
+                      <p><span className="blood-badge">{user.bloodGroup || 'N/A'}</span></p>
+                    </div>
+                    <div className="info-item">
+                      <label>Location</label>
+                      <p>{user.location || 'N/A'}</p>
+                    </div>
+                    <div className="info-item">
+                      <label>Age</label>
+                      <p>{user.age ? `${user.age} Years` : 'N/A'}</p>
+                    </div>
+                    <div className="info-item">
+                      <label>Availability Status</label>
+                      <p style={{ color: user.isAvailable ? '#2e7d32' : '#c62828', fontWeight: 'bold' }}>
+                        {user.isAvailable ? '🟢 Available to Donate' : '🔴 Unavailable'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ======== AVAILABLE REQUESTS TAB ======== */}
+              {activeTab === 'requests' && (
+                <div>
+                  <h2>Available Blood Requests ({requests.length})</h2>
+                  {requests.length === 0 ? (
+                    <div className="no-data">No blood requests available for your blood group ({user?.bloodGroup}) at this time.</div>
+                  ) : (
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Seeker</th>
+                          <th>Blood Group</th>
+                          <th>Location</th>
+                          <th>Contact</th>
+                          <th>Note</th>
+                          <th>Date</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {requests.map((req) => (
+                          <tr key={req._id}>
+                            <td>{req.seeker?.fullName || 'Anonymous'}</td>
+                            <td><span className="blood-badge">{req.bloodGroup}</span></td>
+                            <td>{req.location}</td>
+                            <td>{req.seeker?.phoneNumber || 'N/A'}</td>
+                            <td>{req.note || '—'}</td>
+                            <td>{formatDate(req.createdAt)}</td>
+                            <td>
+                              <button className="action-btn" onClick={() => handleAcceptRequest(req._id)}>
+                                Accept
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              )}
+
+              {/* ======== DONATION HISTORY TAB ======== */}
+              {activeTab === 'history' && (
+                <div>
+                  <h2>Donation History</h2>
+                  {history.length === 0 ? (
+                    <div className="no-data">No donation history recorded yet.</div>
+                  ) : (
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Seeker Name</th>
+                          <th>Blood Group</th>
+                          <th>Location</th>
+                          <th>Contact</th>
+                          <th>Date Accepted</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {history.map((item) => (
+                          <tr key={item._id}>
+                            <td>{item.seeker?.fullName || 'Seeker'}</td>
+                            <td><span className="blood-badge">{item.bloodGroup}</span></td>
+                            <td>{item.location}</td>
+                            <td>{item.seeker?.phoneNumber || 'N/A'}</td>
+                            <td>{formatDate(item.acceptedAt)}</td>
+                            <td><span className={`status-badge ${item.status}`}>{item.status}</span></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              )}
+
+              {/* ======== UPDATE PROFILE TAB ======== */}
+              {activeTab === 'updateProfile' && (
+                <div className="form-container">
+                  <h2>Update Profile</h2>
+                  <form onSubmit={handleProfileSave}>
+                    <div className="form-group">
+                      <label>Full Name</label>
+                      <input
+                        type="text"
+                        value={profileForm.fullName}
+                        onChange={(e) => setProfileForm({ ...profileForm, fullName: e.target.value })}
+                        required
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Phone Number</label>
+                      <input
+                        type="text"
+                        value={profileForm.phoneNumber}
+                        onChange={(e) => setProfileForm({ ...profileForm, phoneNumber: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Age</label>
+                      <input
+                        type="number"
+                        min="18"
+                        max="65"
+                        value={profileForm.age}
+                        onChange={(e) => setProfileForm({ ...profileForm, age: e.target.value })}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Location</label>
+                      <input
+                        type="text"
+                        value={profileForm.location}
+                        onChange={(e) => setProfileForm({ ...profileForm, location: e.target.value })}
+                      />
+                    </div>
+
+                    <button type="submit" className="submit-btn" disabled={profileSaving}>
+                      {profileSaving ? 'Saving...' : 'Update Profile'}
+                    </button>
+                  </form>
+                </div>
+              )}
+            </div>
           )}
-          <button className="logout-btn" onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
-      </header>
-
-      {error && <div className="alert-message error">{error}</div>}
-      {profileSuccess && <div className="alert-message success">{profileSuccess}</div>}
-
-      <div className="dashboard-tabs">
-        <button
-          className={`tab-btn ${activeTab === 'userInfo' ? 'active' : ''}`}
-          onClick={() => handleTabChange('userInfo')}
-        >
-          User Info
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'requests' ? 'active' : ''}`}
-          onClick={() => handleTabChange('requests')}
-        >
-          Available Requests ({requests.length})
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'history' ? 'active' : ''}`}
-          onClick={() => handleTabChange('history')}
-        >
-          Donation History
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'updateProfile' ? 'active' : ''}`}
-          onClick={() => handleTabChange('updateProfile')}
-        >
-          Update Profile
-        </button>
-      </div>
-
-      <div className="dashboard-content">
-        {/* ======== USER INFO TAB ======== */}
-        {activeTab === 'userInfo' && user && (
-          <div className="user-info-card">
-            <div className="info-item">
-              <label>Full Name</label>
-              <p>{user.fullName}</p>
-            </div>
-            <div className="info-item">
-              <label>Email</label>
-              <p>{user.email}</p>
-            </div>
-            <div className="info-item">
-              <label>Phone Number</label>
-              <p>{user.phoneNumber || 'N/A'}</p>
-            </div>
-            <div className="info-item">
-              <label>Blood Group</label>
-              <p><span className="blood-badge">{user.bloodGroup || 'N/A'}</span></p>
-            </div>
-            <div className="info-item">
-              <label>Location</label>
-              <p>{user.location || 'N/A'}</p>
-            </div>
-            <div className="info-item">
-              <label>Age</label>
-              <p>{user.age ? `${user.age} Years` : 'N/A'}</p>
-            </div>
-            <div className="info-item">
-              <label>Availability</label>
-              <p style={{ color: user.isAvailable ? '#2e7d32' : '#c62828' }}>
-                {user.isAvailable ? 'Available to Donate' : 'Unavailable'}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* ======== AVAILABLE REQUESTS TAB ======== */}
-        {activeTab === 'requests' && (
-          <div>
-            {requests.length === 0 ? (
-              <div className="no-data">No blood requests available for your blood group ({user?.bloodGroup}) at this time.</div>
-            ) : (
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Seeker</th>
-                    <th>Blood Group</th>
-                    <th>Location</th>
-                    <th>Contact</th>
-                    <th>Note</th>
-                    <th>Date</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {requests.map((req) => (
-                    <tr key={req._id}>
-                      <td>{req.seeker?.fullName || 'Anonymous'}</td>
-                      <td><span className="blood-badge">{req.bloodGroup}</span></td>
-                      <td>{req.location}</td>
-                      <td>{req.seeker?.phoneNumber || 'N/A'}</td>
-                      <td>{req.note || '—'}</td>
-                      <td>{formatDate(req.createdAt)}</td>
-                      <td>
-                        <button className="action-btn" onClick={() => handleAcceptRequest(req._id)}>
-                          Accept
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        )}
-
-        {/* ======== DONATION HISTORY TAB ======== */}
-        {activeTab === 'history' && (
-          <div>
-            {history.length === 0 ? (
-              <div className="no-data">No donation history recorded yet.</div>
-            ) : (
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Seeker Name</th>
-                    <th>Blood Group</th>
-                    <th>Location</th>
-                    <th>Contact</th>
-                    <th>Date Accepted</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {history.map((item) => (
-                    <tr key={item._id}>
-                      <td>{item.seeker?.fullName || 'Seeker'}</td>
-                      <td><span className="blood-badge">{item.bloodGroup}</span></td>
-                      <td>{item.location}</td>
-                      <td>{item.seeker?.phoneNumber || 'N/A'}</td>
-                      <td>{formatDate(item.acceptedAt)}</td>
-                      <td><span className={`status-badge ${item.status}`}>{item.status}</span></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        )}
-
-        {/* ======== UPDATE PROFILE TAB ======== */}
-        {activeTab === 'updateProfile' && (
-          <div className="form-container">
-            <form onSubmit={handleProfileSave}>
-              <div className="form-group">
-                <label>Full Name</label>
-                <input
-                  type="text"
-                  value={profileForm.fullName}
-                  onChange={(e) => setProfileForm({ ...profileForm, fullName: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Phone Number</label>
-                <input
-                  type="text"
-                  value={profileForm.phoneNumber}
-                  onChange={(e) => setProfileForm({ ...profileForm, phoneNumber: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Age</label>
-                <input
-                  type="number"
-                  min="18"
-                  max="65"
-                  value={profileForm.age}
-                  onChange={(e) => setProfileForm({ ...profileForm, age: e.target.value })}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Location</label>
-                <input
-                  type="text"
-                  value={profileForm.location}
-                  onChange={(e) => setProfileForm({ ...profileForm, location: e.target.value })}
-                />
-              </div>
-
-              <button type="submit" className="submit-btn" disabled={profileSaving}>
-                {profileSaving ? 'Saving...' : 'Update Profile'}
-              </button>
-            </form>
-          </div>
-        )}
+        </main>
       </div>
     </div>
   );

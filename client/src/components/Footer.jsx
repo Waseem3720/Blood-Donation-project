@@ -5,7 +5,10 @@ const Footer = () => {
     <footer className="footer">
       <div className="footer-container">
         <div className="footer-section">
-          <h3>BloodConnect</h3>
+          <h3 className="footer-brand">
+            <span className="footer-logo-icon">🩸</span>
+            <span>BloodConnect</span>
+          </h3>
           <p>Connecting donors with those in need</p>
         </div>
         
@@ -13,6 +16,7 @@ const Footer = () => {
           <h4>Quick Links</h4>
           <ul className="horizontal-links">
             <li><a href="/">Home</a></li>
+            <li><a href="/login">Login</a></li>
             <li><a href="/register">Register</a></li>
           </ul>
         </div>

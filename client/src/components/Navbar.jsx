@@ -1,5 +1,4 @@
 import { Link, useLocation } from 'react-router-dom';
-import NotificationBell from './NotificationBell';
 import '../assets/navbar.css';
 
 const Navbar = () => {
@@ -7,7 +6,7 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className="navbar">
+    <header className="navbar">
       <div className="nav-container">
         <Link to="/" className="logo">
           <span className="logo-icon">🩸</span>
@@ -29,14 +28,13 @@ const Navbar = () => {
           </Link>
           <Link 
             to="/register" 
-            className={`nav-link ${isActive('/register') ? 'active' : 'register-btn'}`}
+            className={`nav-link register-btn ${isActive('/register') ? 'active' : ''}`}
           >
             Register
           </Link>
-          <NotificationBell />
         </div>
       </div>
-    </nav>
+    </header>
   );
 };
 
