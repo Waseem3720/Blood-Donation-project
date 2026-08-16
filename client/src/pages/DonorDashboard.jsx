@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSocket } from '../context/SocketContext';
 import api, { getDonationHistory, updateProfile } from '../services/api';
 import '../assets/donorDashboard.css';
 
@@ -15,7 +14,6 @@ const DonorDashboard = () => {
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState('');
   const navigate = useNavigate();
-  const { socket } = useSocket();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,25 +45,7 @@ const DonorDashboard = () => {
     };
 
     fetchData();
-
-    const handleNewRequest = (newRequest) => {
-      setRequests((prev) => [newRequest, ...prev]);
-    };
-
-    if (socket) {
-      socket.on('newRequest', handleNewRequest);
-      socket.on('requestCancelled', (requestId) => {
-        setRequests((prev) => prev.filter((req) => req._id !== requestId));
-      });
-    }
-
-    return () => {
-      if (socket) {
-        socket.off('newRequest', handleNewRequest);
-        socket.off('requestCancelled');
-      }
-    };
-  }, [socket]);
+  }, []);
 
   const loadHistory = async () => {
     try {

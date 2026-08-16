@@ -157,6 +157,77 @@ exports.getStatistics = async (req, res) => {
   }
 };
 
+// Get all donors with optional filtering by blood group and location
+exports.getDonors = async (req, res) => {
+  try {
+    const { bloodGroup, location, page = 1, limit = 10 } = req.query;
+    
+    const query = { role: 'donor' };
+    if (bloodGroup) query.bloodGroup = bloodGroup;
+    if (location) query.location = { $regex: location, $options: 'i' };
+
+    const [donors, count] = await Promise.all([
+      User.find(query)
+        .select('-password -googleId -isGoogleAuth')
+        .limit(limit * 1)
+        .skip((page - 1) * limit)
+        .sort({ createdAt: -1 })
+        .lean(),
+      User.countDocuments(query)
+    ]);
+
+    res.status(200).json({
+      success: true,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page,
+      count: donors.length,
+      totalDonors: count,
+      data: donors
+    });
+  } catch (err) {
+    console.error('Error fetching donors:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch donors. Please try again later.'
+    });
+  }
+};
+
+// Get all seekers with optional filtering by location
+exports.getSeekers = async (req, res) => {
+  try {
+    const { location, page = 1, limit = 10 } = req.query;
+    
+    const query = { role: 'seeker' };
+    if (location) query.location = { $regex: location, $options: 'i' };
+
+    const [seekers, count] = await Promise.all([
+      User.find(query)
+        .select('-password -googleId -isGoogleAuth')
+        .limit(limit * 1)
+        .skip((page - 1) * limit)
+        .sort({ createdAt: -1 })
+        .lean(),
+      User.countDocuments(query)
+    ]);
+
+    res.status(200).json({
+      success: true,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page,
+      count: seekers.length,
+      totalSeekers: count,
+      data: seekers
+    });
+  } catch (err) {
+    console.error('Error fetching seekers:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch seekers. Please try again later.'
+    });
+  }
+};
+
 // Block/Unblock user
 exports.toggleUserBlock = async (req, res) => {
   try {

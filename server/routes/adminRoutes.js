@@ -10,6 +10,11 @@ router.use(authorize('admin'));
 // Users
 router.get('/users', adminController.getAllUsers);
 router.delete('/users/:id', adminController.deleteUser);
+router.patch('/users/:id/toggle-block', adminController.toggleUserBlock);
+
+// Donors and Seekers
+router.get('/donors', adminController.getDonors);
+router.get('/seekers', adminController.getSeekers);
 
 // Blood Requests
 router.get('/requests', adminController.getAllBloodRequests);

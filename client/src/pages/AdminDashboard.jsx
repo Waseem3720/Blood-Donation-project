@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSocket } from '../context/SocketContext';
 import api from '../services/api';
 import AdminUsersTable from '../components/admin/AdminUsersTable';
 import AdminRequestsTable from '../components/admin/AdminRequestsTable';
+import ViewDonors from '../components/admin/ViewDonors';
+import ViewSeekers from '../components/admin/ViewSeekers';
 import '../assets/adminDashboard.css';
 
 const AdminDashboard = () => {
@@ -13,7 +14,6 @@ const AdminDashboard = () => {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('users');
   const navigate = useNavigate();
-  const { socket } = useSocket();
 
   const fetchData = async () => {
     try {
@@ -38,59 +38,12 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchData();
-
-    // Socket.IO listeners
-    const handleNewUser = (newUser) => {
-      setUsers(prev => [newUser, ...prev]);
-    };
-
-    const handleUserUpdated = (updatedUser) => {
-      setUsers(prev => prev.map(user => 
-        user._id === updatedUser._id ? updatedUser : user
-      ));
-    };
-
-    const handleUserDeleted = (userId) => {
-      setUsers(prev => prev.filter(user => user._id !== userId));
-    };
-
-    const handleNewRequest = (newRequest) => {
-      setRequests(prev => [newRequest, ...prev]);
-    };
-
-    const handleRequestUpdated = (updatedRequest) => {
-      setRequests(prev => prev.map(req => 
-        req._id === updatedRequest._id ? updatedRequest : req
-      ));
-    };
-
-    if (socket) {
-      socket.on('newUser', handleNewUser);
-      socket.on('userUpdated', handleUserUpdated);
-      socket.on('userDeleted', handleUserDeleted);
-      socket.on('newBloodRequest', handleNewRequest);
-      socket.on('requestUpdated', handleRequestUpdated);
-    }
-
-    return () => {
-      if (socket) {
-        socket.off('newUser', handleNewUser);
-        socket.off('userUpdated', handleUserUpdated);
-        socket.off('userDeleted', handleUserDeleted);
-        socket.off('newBloodRequest', handleNewRequest);
-        socket.off('requestUpdated', handleRequestUpdated);
-      }
-    };
-  }, [socket]);
+  }, []);
 
   const handleDeleteUser = async (userId) => {
     try {
       await api.delete(`/admin/users/${userId}`);
       setUsers(prev => prev.filter(user => user._id !== userId));
-      
-      if (socket) {
-        socket.emit('adminDeletedUser', userId);
-      }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to delete user');
     }
@@ -102,10 +55,6 @@ const AdminDashboard = () => {
       setUsers(prev => prev.map(user => 
         user._id === userId ? { ...user, isBlocked: data.isBlocked } : user
       ));
-      
-      if (socket) {
-        socket.emit('adminBlockedUser', { userId, isBlocked });
-      }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update user');
     }
@@ -150,6 +99,18 @@ const AdminDashboard = () => {
         >
           Blood Requests
         </button>
+        <button
+          className={`tab-btn ${activeTab === 'donors' ? 'active' : ''}`}
+          onClick={() => setActiveTab('donors')}
+        >
+          View Donors
+        </button>
+        <button
+          className={`tab-btn ${activeTab === 'seekers' ? 'active' : ''}`}
+          onClick={() => setActiveTab('seekers')}
+        >
+          View Seekers
+        </button>
       </div>
 
       <div className="dashboard-content">
@@ -159,8 +120,12 @@ const AdminDashboard = () => {
             onDelete={handleDeleteUser} 
             onBlock={handleBlockUser} 
           />
-        ) : (
+        ) : activeTab === 'requests' ? (
           <AdminRequestsTable requests={requests} />
+        ) : activeTab === 'donors' ? (
+          <ViewDonors />
+        ) : (
+          <ViewSeekers />
         )}
       </div>
     </div>

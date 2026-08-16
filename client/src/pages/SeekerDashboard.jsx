@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSocket } from '../context/SocketContext';
 import {
   getCurrentUser,
   getSeekerRequests,
@@ -32,7 +31,6 @@ const SeekerDashboard = () => {
   const [profileSaving, setProfileSaving] = useState(false);
 
   const navigate = useNavigate();
-  const { socket } = useSocket();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -70,20 +68,7 @@ const SeekerDashboard = () => {
     };
 
     fetchData();
-
-    const handleRequestAccepted = ({ requestId, donor }) => {
-      setRequests((prev) =>
-        prev.map((req) =>
-          req._id === requestId ? { ...req, status: 'accepted', acceptedBy: donor } : req
-        )
-      );
-    };
-
-    if (socket) socket.on('requestAccepted', handleRequestAccepted);
-    return () => {
-      if (socket) socket.off('requestAccepted', handleRequestAccepted);
-    };
-  }, [socket, navigate]);
+  }, [navigate]);
 
   // Handle blood group change to fetch locations matching selected blood group
   const handleBloodGroupChange = async (selectedBg) => {
@@ -120,7 +105,6 @@ const SeekerDashboard = () => {
       setRequests([newRequest, ...requests]);
       setRequestSuccess('Blood request created successfully!');
       setRequestForm({ bloodGroup: '', location: '', note: '' });
-      if (socket) socket.emit('newBloodRequest', newRequest);
       setActiveTab('viewRequests');
     } catch (err) {
       setError(err.message || 'Failed to create request');

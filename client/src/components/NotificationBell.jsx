@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
-import { useSocket } from '../context/SocketContext';
 import { getNotifications, markNotificationAsRead } from '../services/api';
 import '../assets/notification.css';
 
 const NotificationBell = () => {
-  const { notifications, clearNotifications, socket } = useSocket();
   const [isOpen, setIsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
         const data = await getNotifications();
+        setNotifications(data.notifications || []);
         setUnreadCount((data.notifications || []).filter(n => !n.read).length);
       } catch (err) {
         console.error('Failed to fetch notifications:', err);
@@ -19,7 +19,7 @@ const NotificationBell = () => {
     };
 
     fetchNotifications();
-  }, [notifications]);
+  }, []);
 
   const handleNotificationClick = async (notification) => {
     try {
@@ -32,6 +32,11 @@ const NotificationBell = () => {
     } catch (err) {
       console.error('Failed to mark notification as read:', err);
     }
+  };
+
+  const clearNotifications = () => {
+    setNotifications([]);
+    setUnreadCount(0);
   };
 
   return (
