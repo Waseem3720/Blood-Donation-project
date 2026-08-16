@@ -51,3 +51,9 @@ Thumbs.db
 # Local configuration
 
 *.local
+
+# Scripts and Admin setup
+server/scripts/
+scripts/
+createAdmin.js
+
