@@ -233,4 +233,32 @@
     .donor-grid {
       grid-template-columns: 1fr;
     }
+
+    .form-actions {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .secondary-btn,
+    .submit-btn {
+      width: 100%;
+      text-align: center;
+    }
+
+    .request-form-container {
+      padding: 1rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .view-btn,
+    .cancel-btn {
+      width: 100%;
+      text-align: center;
+    }
+
+    .action-buttons {
+      flex-direction: column;
+      width: 100%;
+    }
   }

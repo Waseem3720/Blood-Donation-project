@@ -85,6 +85,11 @@
     gap: 1rem;
     align-items: flex-start;
   }
+
+  .dashboard-tabs {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
 }
 
 /* View Donors and Seekers Styles */

@@ -80,5 +80,19 @@
     .complete-registration-container {
       padding: 1.5rem;
       margin: 1rem;
+      max-width: calc(100% - 2rem);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .complete-registration-container {
+      padding: 1rem;
+      margin: 0.5rem;
+      border-radius: 6px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 0.85rem;
     }
   }

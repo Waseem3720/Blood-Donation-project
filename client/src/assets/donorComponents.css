@@ -111,9 +111,24 @@
   @media (max-width: 600px) {
     .donor-status-card {
       grid-template-columns: 1fr;
+      padding: 1rem;
     }
     
     .request-list {
       grid-template-columns: 1fr;
+    }
+
+    .toggle-btn {
+      width: 100%;
+    }
+
+    .request-card {
+      padding: 1rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .accept-btn {
+      width: 100%;
     }
   }

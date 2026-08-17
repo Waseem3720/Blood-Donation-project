@@ -130,14 +130,33 @@
 @media (max-width: 768px) {
   .dashboard-main {
     padding: 1rem;
+    width: 100%;
+  }
+
+  /* Make sidebar absolute overlay on small screens */
+  .sidebar {
+    position: absolute;
+    height: 100%;
+    z-index: 1000;
   }
 
   .sidebar.open {
-    width: 200px;
+    width: 240px;
+  }
+  
+  .sidebar.closed {
+    width: 0;
+    overflow: hidden;
   }
 
   .sidebar-link {
     padding: 0.65rem 0.75rem;
     font-size: 0.88rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-main {
+    padding: 0.5rem;
   }
 }

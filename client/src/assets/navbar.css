@@ -144,6 +144,8 @@
 
   .nav-links {
     gap: 0.35rem;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
   .nav-link {
