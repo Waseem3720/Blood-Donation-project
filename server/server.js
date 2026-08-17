@@ -23,6 +23,7 @@ app.use('/api/donor', require('./routes/donorRoutes'));
 app.use('/api/seeker', require('./routes/seekerRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/subscriptions', require('./routes/subscriptionRoutes'));
 
 // Simple health check
 app.get('/api/health', (req, res) => {

@@ -2,6 +2,7 @@ import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode'; // Updated import
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import { initPushSubscription } from '../services/pushNotification';
 import '../assets/googleAuth.css';
 import { useState } from 'react'; // Added for error state
 
@@ -43,6 +44,7 @@ const GoogleAuth = ({ role }) => {
         
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
+        initPushSubscription().catch(console.error);
         navigate(`/${data.user.role}`, { replace: true });
       }
     } catch (error) {

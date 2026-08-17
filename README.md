@@ -30,8 +30,7 @@ A comprehensive web-based platform designed to bridge the gap between blood dono
 - **Node.js**: Scalable runtime for the server environment.
 - **Express.js**: Robust web framework for building APIs.
 - **MongoDB & Mongoose**: Flexible NoSQL database with object data modeling.
-- **Web Push Notifications**: ending real-time browser notifications to users for important blood donation requests and updates.
-
+- **Web Push Notifications**: Sending real-time browser notifications to users for important blood donation requests and updates.
 - **JSON Web Tokens (JWT)**: Secure user session management.
 - **Bcrypt.js**: High-security password hashing.
 
@@ -41,6 +40,7 @@ A comprehensive web-based platform designed to bridge the gap between blood dono
 - Node.js (v16+ recommended)
 - MongoDB account/local instance
 - Google Cloud Console project (for OAuth)
+- VAPID Keys for Web Push Notifications
 
 ### Installation
 
@@ -62,6 +62,11 @@ A comprehensive web-based platform designed to bridge the gap between blood dono
      JWT_SECRET=your_secret_key
      GOOGLE_CLIENT_ID=your_google_client_id
      GOOGLE_CLIENT_SECRET=your_google_client_secret
+     
+     # Web Push Notification Keys
+     VAPID_PUBLIC_KEY=your_vapid_public_key
+     VAPID_PRIVATE_KEY=your_vapid_private_key
+     VAPID_SUBJECT=mailto:your_email@example.com
      ```
 
 3. **Setup the Client**

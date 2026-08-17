@@ -1,5 +1,39 @@
 const BloodRequest = require('../models/BloodRequest');
 const User = require('../models/User');
+const Subscription = require('../models/Subscription');
+const webpush = require('web-push');
+
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY && process.env.VAPID_SUBJECT) {
+  webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT,
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+}
+
+const sendPushToUsers = async (userIds, payload) => {
+  try {
+    const subscriptions = await Subscription.find({ user: { $in: userIds } });
+    const notifications = subscriptions.map(async (sub) => {
+      const pushSubscription = {
+        endpoint: sub.endpoint,
+        keys: sub.keys
+      };
+      try {
+        await webpush.sendNotification(pushSubscription, JSON.stringify(payload));
+      } catch (err) {
+        if (err.statusCode === 404 || err.statusCode === 410) {
+          await Subscription.deleteOne({ _id: sub._id });
+        } else {
+          console.error('Error sending push notification:', err.message || err);
+        }
+      }
+    });
+    await Promise.allSettled(notifications);
+  } catch (err) {
+    console.error('Error in sendPushToUsers:', err);
+  }
+};
 
 const getMatchingRequests = async (req, res) => {
   try {
@@ -56,6 +90,19 @@ const acceptRequest = async (req, res, next) => {
     request.acceptedAt = Date.now();
     
     await request.save();
+
+    // Trigger Web Push Notification to the Seeker who created the request
+    (async () => {
+      try {
+        await sendPushToUsers([request.seeker], {
+          title: 'Blood Request Accepted',
+          body: 'Your blood request has been accepted.',
+          url: '/seeker'
+        });
+      } catch (pushErr) {
+        console.error('Push notification error on request acceptance:', pushErr);
+      }
+    })();
 
     res.status(200).json({
       success: true,

@@ -1,5 +1,39 @@
 const BloodRequest = require('../models/BloodRequest');
 const User = require('../models/User');
+const Subscription = require('../models/Subscription');
+const webpush = require('web-push');
+
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY && process.env.VAPID_SUBJECT) {
+  webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT,
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+}
+
+const sendPushToUsers = async (userIds, payload) => {
+  try {
+    const subscriptions = await Subscription.find({ user: { $in: userIds } });
+    const notifications = subscriptions.map(async (sub) => {
+      const pushSubscription = {
+        endpoint: sub.endpoint,
+        keys: sub.keys
+      };
+      try {
+        await webpush.sendNotification(pushSubscription, JSON.stringify(payload));
+      } catch (err) {
+        if (err.statusCode === 404 || err.statusCode === 410) {
+          await Subscription.deleteOne({ _id: sub._id });
+        } else {
+          console.error('Error sending push notification:', err.message || err);
+        }
+      }
+    });
+    await Promise.allSettled(notifications);
+  } catch (err) {
+    console.error('Error in sendPushToUsers:', err);
+  }
+};
 
 // Create blood request
 const createBloodRequest = async (req, res, next) => {
@@ -20,6 +54,29 @@ const createBloodRequest = async (req, res, next) => {
     });
     
     await request.save();
+
+    // Trigger Web Push Notifications to matching donors
+    (async () => {
+      try {
+        const reqLocation = (location || seeker.location || '').trim();
+        const matchingDonors = await User.find({
+          role: 'donor',
+          bloodGroup: request.bloodGroup,
+          location: { $regex: new RegExp(`^${reqLocation}$`, 'i') }
+        }).select('_id');
+        
+        const donorIds = matchingDonors.map(d => d._id);
+        if (donorIds.length > 0) {
+          await sendPushToUsers(donorIds, {
+            title: 'Urgent Blood Request',
+            body: `Blood group ${request.bloodGroup} needed in ${reqLocation}`,
+            url: '/donor'
+          });
+        }
+      } catch (pushErr) {
+        console.error('Push notification error on request creation:', pushErr);
+      }
+    })();
 
     res.status(201).json({
       success: true,

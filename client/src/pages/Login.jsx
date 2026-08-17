@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GoogleAuth from '../components/GoogleAuth';
 import { login } from '../services/auth';
+import { initPushSubscription } from '../services/pushNotification';
 import '../assets/auth.css';
 
 const Login = () => {
@@ -22,7 +23,13 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Request permission immediately on button click to preserve user gesture context!
+      if ('Notification' in window && Notification.permission === 'default') {
+        await Notification.requestPermission();
+      }
+
       const { user } = await login(formData);
+      initPushSubscription().catch(console.error);
       navigate(`/${user.role}`);
     } catch (err) {
       setError(err.message);

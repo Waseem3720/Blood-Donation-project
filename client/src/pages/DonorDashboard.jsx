@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api, { getDonationHistory, updateProfile } from '../services/api';
+import { initPushSubscription } from '../services/pushNotification';
 import DashboardNavbar from '../components/DashboardNavbar';
 import Sidebar from '../components/Sidebar';
 import '../assets/donorDashboard.css';
@@ -44,6 +45,7 @@ const DonorDashboard = () => {
         });
 
         setRequests(requestsRes.data?.data || requestsRes.data || []);
+        initPushSubscription().catch(console.error);
       } catch (err) {
         console.error('Fetch error:', err);
         setError(err.response?.data?.message || err.message || 'Failed to fetch data');

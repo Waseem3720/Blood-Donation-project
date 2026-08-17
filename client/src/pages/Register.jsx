@@ -5,6 +5,7 @@ import RoleSelector from '../components/RoleSelector';
 import DonorForm from '../components/forms/DonorForm';
 import SeekerForm from '../components/forms/SeekerForm';
 import api from '../services/api';
+import { initPushSubscription } from '../services/pushNotification';
 import '../assets/auth.css';
 
 const Register = () => {
@@ -14,9 +15,14 @@ const Register = () => {
 
   const handleManualRegister = async (formData) => {
     try {
+      if ('Notification' in window && Notification.permission === 'default') {
+        await Notification.requestPermission();
+      }
+
       const { data } = await api.post('/auth/register', { ...formData, role });
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      initPushSubscription().catch(console.error);
       navigate(`/${role}`);
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');

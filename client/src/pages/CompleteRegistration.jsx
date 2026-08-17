@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import BloodGroupSelect from '../components/BloodGroupSelect';
 import api from '../services/api';
+import { initPushSubscription } from '../services/pushNotification';
 import '../assets/complete-registration.css';
 import '../assets/forms.css';
 
@@ -41,6 +42,10 @@ const CompleteRegistration = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      if ('Notification' in window && Notification.permission === 'default') {
+        await Notification.requestPermission();
+      }
+
       const endpoint = state?.googleData ? 
         '/auth/complete-google-signup' : 
         '/auth/register';
@@ -53,6 +58,7 @@ const CompleteRegistration = () => {
 
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      initPushSubscription().catch(console.error);
       navigate(`/${state.role}`);
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');

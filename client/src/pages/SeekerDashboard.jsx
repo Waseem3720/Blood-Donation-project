@@ -8,6 +8,7 @@ import {
   updateProfile,
   getDonorLocations,
 } from '../services/api';
+import { initPushSubscription } from '../services/pushNotification';
 import DashboardNavbar from '../components/DashboardNavbar';
 import Sidebar from '../components/Sidebar';
 import '../assets/seekerDashboard.css';
@@ -65,6 +66,7 @@ const SeekerDashboard = () => {
           note: '',
         });
         setRequests(Array.isArray(requestsData) ? requestsData : []);
+        initPushSubscription().catch(console.error);
       } catch (err) {
         console.error('Fetch error:', err);
         setError(err.message);
