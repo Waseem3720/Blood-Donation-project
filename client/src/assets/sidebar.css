@@ -1,4 +1,6 @@
-/* Sidebar Styles */
+/* =============================================
+   Sidebar Styles — Desktop Collapsible Panel
+   ============================================= */
 .sidebar {
   background-color: #ffffff;
   border-right: 1px solid #e0e0e0;
@@ -105,7 +107,9 @@
   text-overflow: ellipsis;
 }
 
-/* Common Layout Wrapper for Dashboards */
+/* =============================================
+   Common Layout Wrapper for Dashboards
+   ============================================= */
 .dashboard-layout {
   display: flex;
   flex-direction: column;
@@ -126,37 +130,116 @@
   min-width: 0;
 }
 
-/* Responsive Sidebar */
+/* =============================================
+   Mobile Bottom Navigation Bar
+   ============================================= */
+.sidebar-bottom-nav {
+  display: none; /* hidden on desktop — shown via JS in component */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-top: 1px solid #e0e0e0;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+  z-index: 1000;
+  padding: 0;
+}
+
+.sidebar-bottom-menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: stretch;
+  height: 60px;
+}
+
+.sidebar-bottom-item {
+  flex: 1;
+  display: flex;
+}
+
+.sidebar-bottom-link {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  font-size: 0.65rem;
+  font-weight: 500;
+  padding: 6px 4px;
+  transition: all 0.2s ease;
+  border-top: 2px solid transparent;
+  position: relative;
+}
+
+.sidebar-bottom-link:hover {
+  color: var(--primary-color, #d32f2f);
+  background-color: #fff5f5;
+}
+
+.sidebar-bottom-link.active {
+  color: var(--primary-color, #d32f2f);
+  border-top-color: var(--primary-color, #d32f2f);
+  background-color: #fff5f5;
+  font-weight: 600;
+}
+
+.sidebar-bottom-link .tab-icon {
+  font-size: 1.3rem;
+  min-width: auto;
+}
+
+.tab-bottom-label {
+  font-size: 0.6rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 64px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* =============================================
+   Responsive Overrides
+   ============================================= */
 @media (max-width: 768px) {
   .dashboard-main {
     padding: 1rem;
     width: 100%;
+    /* Add bottom padding so content isn't hidden behind the bottom nav */
+    padding-bottom: 72px;
   }
 
-  /* Make sidebar absolute overlay on small screens */
+  /* The desktop sidebar is hidden on mobile (component renders bottom nav instead) */
   .sidebar {
-    position: absolute;
-    height: 100%;
-    z-index: 1000;
+    display: none;
   }
 
-  .sidebar.open {
-    width: 240px;
-  }
-  
-  .sidebar.closed {
-    width: 0;
-    overflow: hidden;
-  }
-
-  .sidebar-link {
-    padding: 0.65rem 0.75rem;
-    font-size: 0.88rem;
+  /* Show bottom nav on mobile */
+  .sidebar-bottom-nav {
+    display: block;
   }
 }
 
 @media (max-width: 480px) {
   .dashboard-main {
-    padding: 0.5rem;
+    padding: 0.75rem;
+    padding-bottom: 72px;
+  }
+
+  .tab-bottom-label {
+    font-size: 0.55rem;
+    max-width: 52px;
+  }
+
+  .sidebar-bottom-link .tab-icon {
+    font-size: 1.15rem;
   }
 }
