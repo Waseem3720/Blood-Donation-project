@@ -10,6 +10,7 @@
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.03);
   z-index: 90;
   flex-shrink: 0;
+  width: 240px;
 }
 
 .sidebar.open {
@@ -131,115 +132,54 @@
 }
 
 /* =============================================
-   Mobile Bottom Navigation Bar
-   ============================================= */
-.sidebar-bottom-nav {
-  display: none; /* hidden on desktop — shown via JS in component */
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #ffffff;
-  border-top: 1px solid #e0e0e0;
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
-  z-index: 1000;
-  padding: 0;
-}
-
-.sidebar-bottom-menu {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  align-items: stretch;
-  height: 60px;
-}
-
-.sidebar-bottom-item {
-  flex: 1;
-  display: flex;
-}
-
-.sidebar-bottom-link {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #888;
-  font-size: 0.65rem;
-  font-weight: 500;
-  padding: 6px 4px;
-  transition: all 0.2s ease;
-  border-top: 2px solid transparent;
-  position: relative;
-}
-
-.sidebar-bottom-link:hover {
-  color: var(--primary-color, #d32f2f);
-  background-color: #fff5f5;
-}
-
-.sidebar-bottom-link.active {
-  color: var(--primary-color, #d32f2f);
-  border-top-color: var(--primary-color, #d32f2f);
-  background-color: #fff5f5;
-  font-weight: 600;
-}
-
-.sidebar-bottom-link .tab-icon {
-  font-size: 1.3rem;
-  min-width: auto;
-}
-
-.tab-bottom-label {
-  font-size: 0.6rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 64px;
-  text-align: center;
-  line-height: 1.2;
-}
-
-/* =============================================
-   Responsive Overrides
+   Mobile — compact icon-only sidebar, always visible
    ============================================= */
 @media (max-width: 768px) {
-  .dashboard-main {
-    padding: 1rem;
-    width: 100%;
-    /* Add bottom padding so content isn't hidden behind the bottom nav */
-    padding-bottom: 72px;
+  /* Sidebar shrinks to icon-only strip — never hidden */
+  .sidebar {
+    width: 56px !important;
+    flex-shrink: 0;
+    position: relative;
+    overflow: visible;
   }
 
-  /* The desktop sidebar is hidden on mobile (component renders bottom nav instead) */
-  .sidebar {
+  /* Labels hidden on mobile — icons only */
+  .sidebar .tab-label {
     display: none;
   }
 
-  /* Show bottom nav on mobile */
-  .sidebar-bottom-nav {
-    display: block;
+  /* Center icons */
+  .sidebar .sidebar-link {
+    justify-content: center;
+    padding: 0.8rem 0;
+    gap: 0;
+  }
+
+  /* Hide the desktop toggle button on mobile */
+  .sidebar .sidebar-toggle {
+    display: none;
+  }
+
+  .tab-icon {
+    font-size: 1.3rem;
+  }
+
+  .dashboard-main {
+    padding: 1rem;
+    width: 100%;
   }
 }
 
 @media (max-width: 480px) {
+  .sidebar {
+    width: 48px !important;
+  }
+
+  .sidebar .tab-icon {
+    font-size: 1.1rem;
+  }
+
   .dashboard-main {
-    padding: 0.75rem;
-    padding-bottom: 72px;
-  }
-
-  .tab-bottom-label {
-    font-size: 0.55rem;
-    max-width: 52px;
-  }
-
-  .sidebar-bottom-link .tab-icon {
-    font-size: 1.15rem;
+    padding: 0.5rem;
   }
 }
